@@ -15,3 +15,12 @@
 
   outline: none;
 }
+
+.input:focus::placeholder {
+  color: transparent;
+}
+
+.input:hover::placeholder {
+  color: transparent;
+  transition: color 0.3s;
+}
