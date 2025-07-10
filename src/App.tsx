@@ -1,7 +1,9 @@
 import styles from "./app.module.css";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
+
 import { WORDS, type Challenge } from "./utils/words";
+import maxAttempts from "./utils/maxAttempts";
 
 import Header from "./components/Header/index";
 import Tip from "./components/Tip";
@@ -22,7 +24,11 @@ function App() {
   const [challenge, setChallenge] = useState<Challenge | null>(null);
 
   function handleRestartGame() {
-    alert("Restart!");
+    const isConfirmed = window.confirm("Do you want to reset?");
+
+    if (isConfirmed) {
+      startGame();
+    }
   }
 
   function startGame() {
@@ -66,23 +72,48 @@ function App() {
     setUsedLetters((prevState) => [...prevState, { value, correct }]);
     setScore(currentScore);
     setLetter("");
+
     inputRef.current?.focus();
+  }
+
+  function endGame(message: string) {
+    alert(message);
+    startGame();
   }
 
   useEffect(() => {
     startGame();
   }, []);
 
+  useEffect(() => {
+    if (!challenge) {
+      return;
+    }
+
+    setTimeout(() => {
+      if (score === challenge.word.length) {
+        return endGame("Congratulations! You've got it!!");
+      }
+      if (errors === attemptLimit) {
+        return endGame("GAME OVER");
+      }
+    }, 300);
+  }, [score, usedLetters]);
+
   if (!challenge) {
     return;
   }
 
+  const attemptLimit = maxAttempts(challenge.word.length);
+  const errors = usedLetters.filter(
+    (letter) => letter.correct === false
+  ).length;
   return (
     <div className={styles.container}>
       <main>
         <Header
-          current={score}
-          max={Math.floor(challenge.word.length / 2)}
+          current={errors}
+          max={attemptLimit}
           onRestart={handleRestartGame}
         />
 
